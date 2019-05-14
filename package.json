@@ -1,5 +1,5 @@
 {
-  "name": "rn-sumup",
+  "name": "@540deg/rn-sumup",
   "version": "1.0.8",
   "description": "SumUpSDK Wrapper for React Native.",
   "main": "index.js",
@@ -9,7 +9,7 @@
   "keywords": [
     "react-native"
   ],
-  "author": "NEXTAR",
+  "author": "540deg <dev@540deg.com>",
   "license": "MIT",
   "repository": {
     "type": "git",
