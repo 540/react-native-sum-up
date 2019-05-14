@@ -74,18 +74,23 @@ RCT_EXPORT_METHOD(authenticate:(RCTPromiseResolveBlock)resolve rejecter:(RCTProm
 {
     dispatch_sync(dispatch_get_main_queue(), ^{
         UIViewController *rootViewController = UIApplication.sharedApplication.delegate.window.rootViewController;
-        [SMPSumUpSDK presentLoginFromViewController:rootViewController animated:YES
-                                    completionBlock:^(BOOL success, NSError *error) {
-                                        if (error) {
-                                            [rootViewController dismissViewControllerAnimated:YES completion:nil];
-                                            reject(@"000", @"It was not possible to auth with SumUp. Please, check the username and password provided.", error);
-                                        } else {
-                                            SMPMerchant *merchantInfo = [SMPSumUpSDK currentMerchant];
-                                            NSString *merchantCode = [merchantInfo merchantCode];
-                                            NSString *currencyCode = [merchantInfo currencyCode];
-                                            resolve(@{@"success": @(success), @"userAdditionalInfo": @{ @"merchantCode": merchantCode, @"currencyCode": currencyCode }});
-                                        }
-                                    }];
+        while (rootViewController.presentedViewController != nil) {
+            rootViewController = rootViewController.presentedViewController;
+        }
+        [SMPSumUpSDK presentLoginFromViewController:rootViewController animated:YES completionBlock:^(BOOL success, NSError *error) {
+            if (error) {
+                [rootViewController dismissViewControllerAnimated:YES completion:nil];
+                reject(@"000", @"It was not possible to auth with SumUp. Please, check the username and password provided.", error);
+            } else {
+                SMPMerchant *merchantInfo = [SMPSumUpSDK currentMerchant];
+                NSString *merchantCode = [merchantInfo merchantCode];
+                NSString *currencyCode = [merchantInfo currencyCode];
+                if (merchantCode && currencyCode){
+                    return resolve(@{@"success": @(success), @"userAdditionalInfo": @{ @"merchantCode": merchantCode, @"currencyCode": currencyCode }});
+                }
+                return resolve(@{@"success": @(success) });
+            }
+        }];
     });
 }
 
@@ -141,12 +146,16 @@ RCT_EXPORT_METHOD(checkout:(NSDictionary *)request resolver:(RCTPromiseResolveBl
                                                                          title:title
                                                                   currencyCode:[[SMPSumUpSDK currentMerchant] currencyCode]
                                                                 paymentOptions:paymentOption];
-    if (foreignTransactionID != [NSNull null]) {
+    checkoutRequest.skipScreenOptions = skipScreen;
+    if (foreignTransactionID != nil) {
         [checkoutRequest setForeignTransactionID:foreignTransactionID];
     }
-    checkoutRequest.skipScreenOptions = skipScreen;
+
     dispatch_sync(dispatch_get_main_queue(), ^{
         UIViewController *rootViewController = UIApplication.sharedApplication.delegate.window.rootViewController;
+        while (rootViewController.presentedViewController != nil) {
+            rootViewController = rootViewController.presentedViewController;
+        }
         [SMPSumUpSDK checkoutWithRequest:checkoutRequest
                       fromViewController:rootViewController
                               completion:^(SMPCheckoutResult *result, NSError *error) {
@@ -172,6 +181,9 @@ RCT_EXPORT_METHOD(preferences:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromi
 {
     dispatch_sync(dispatch_get_main_queue(), ^{
         UIViewController *rootViewController = UIApplication.sharedApplication.delegate.window.rootViewController;
+        while (rootViewController.presentedViewController != nil) {
+            rootViewController = rootViewController.presentedViewController;
+        }
         [SMPSumUpSDK presentCheckoutPreferencesFromViewController:rootViewController
                                                          animated:YES
                                                        completion:^(BOOL success, NSError * _Nullable error) {

@@ -138,7 +138,7 @@ public class RNSumUpModule extends ReactContextBaseJavaModule {
     mSumUpPromise = promise;
     try {
       String foreignTransactionId = UUID.randomUUID().toString();
-      if (request.getString("foreignTransactionId") != null) {
+      if (request.hasKey("foreignTransactionId")) {
         foreignTransactionId = request.getString("foreignTransactionId");
       }
 
