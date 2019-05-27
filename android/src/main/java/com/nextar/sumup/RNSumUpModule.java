@@ -147,8 +147,10 @@ public class RNSumUpModule extends ReactContextBaseJavaModule {
               .total(new BigDecimal(request.getString("totalAmount")).setScale(2, RoundingMode.HALF_EVEN))
               .currency(currencyCode)
               .title(request.getString("title"))
-              .foreignTransactionId(foreignTransactionId)
-              .skipSuccessScreen();
+              .foreignTransactionId(foreignTransactionId);
+      if (!request.hasKey("receiptSMS") && !request.hasKey("receiptEmail")) {
+        payment = payment.skipSuccessScreen();
+      }
       if (request.hasKey("receiptEmail")) {
         payment = payment.receiptEmail(request.getString("receiptEmail"));
       }
