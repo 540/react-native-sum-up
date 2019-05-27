@@ -143,14 +143,20 @@ public class RNSumUpModule extends ReactContextBaseJavaModule {
       }
 
       SumUpPayment.Currency currencyCode = this.getCurrency(request.getString("currencyCode"));
-      SumUpPayment payment = SumUpPayment.builder()
+      SumUpPayment.Builder payment = SumUpPayment.builder()
               .total(new BigDecimal(request.getString("totalAmount")).setScale(2, RoundingMode.HALF_EVEN))
               .currency(currencyCode)
               .title(request.getString("title"))
               .foreignTransactionId(foreignTransactionId)
-              .skipSuccessScreen()
-              .build();
-      SumUpAPI.checkout(getCurrentActivity(), payment, REQUEST_CODE_PAYMENT);
+              .skipSuccessScreen();
+      if (request.hasKey("receiptEmail")) {
+        payment = payment.receiptEmail(request.getString("receiptEmail"));
+      }
+      if (request.hasKey("receiptSMS")) {
+        payment = payment.receiptSMS(request.getString("receiptSMS"));
+      }
+
+      SumUpAPI.checkout(getCurrentActivity(), payment.build(), REQUEST_CODE_PAYMENT);
     } catch (Exception ex) {
       mSumUpPromise.reject(ex);
       mSumUpPromise = null;
@@ -165,14 +171,14 @@ public class RNSumUpModule extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void isLoggedIn(Promise promise) {
-    WritableMap map = Arguments.createMap();
+    Boolean isLoggedIn;
     if (CoreState.Instance() == null) {
-      map.putBoolean("isLoggedIn", false);
+      isLoggedIn = false;
     } else {
-      map.putBoolean("isLoggedIn", ((UserModel)CoreState.Instance().get(UserModel.class)).isLoggedIn());
+      isLoggedIn = ((UserModel)CoreState.Instance().get(UserModel.class)).isLoggedIn();
     }
 
-    promise.resolve(map);
+    promise.resolve(isLoggedIn);
   }
 
   private final ActivityEventListener mActivityEventListener = new BaseActivityEventListener() {
@@ -197,6 +203,8 @@ public class RNSumUpModule extends ReactContextBaseJavaModule {
             } else {
               mSumUpPromise.reject(extra.getString(SumUpAPI.Response.RESULT_CODE), extra.getString(SumUpAPI.Response.MESSAGE));
             }
+          } else {
+            mSumUpPromise.reject("");
           }
           break;
 
