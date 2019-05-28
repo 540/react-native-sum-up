@@ -3,6 +3,8 @@ declare module '@540deg/rn-sumup' {
 
   export function authenticate(): Promise<AuthenticateResponse>
 
+  export function authenticateWithToken(accessToken: string): Promise<AuthenticateResponse>
+
   export function preferences(): Promise<void>
 
   export function isLoggedIn(): Promise<boolean>
