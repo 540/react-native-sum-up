@@ -173,14 +173,7 @@ public class RNSumUpModule extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void isLoggedIn(Promise promise) {
-    Boolean isLoggedIn;
-    if (CoreState.Instance() == null) {
-      isLoggedIn = false;
-    } else {
-      isLoggedIn = ((UserModel)CoreState.Instance().get(UserModel.class)).isLoggedIn();
-    }
-
-    promise.resolve(isLoggedIn);
+    promise.resolve(SumUpAPI.isLoggedIn());
   }
 
   private final ActivityEventListener mActivityEventListener = new BaseActivityEventListener() {
