@@ -47,7 +47,24 @@ const RNSumUp = {
     return RNSumUpWrapper.prepareForCheckout();
   },
 
-  checkout(request) {
+  checkout(request, token = null) {
+    if (Platform.OS === 'android') {
+      if (!token) {
+        throw new Error('For Android checkouts you need to provide an OAuth2 token. Please, read: https://github.com/sumup/sumup-android-sdk#5-transparent-authentication');
+      }
+
+      return this.isLoggedIn().then((isLoggedIn) => {
+        if (!isLoggedIn) {
+          const authWithToken = new Promise(async resolve => {
+            await this.authenticateWithToken(token);
+            resolve();
+          });
+
+          return authWithToken.then(() => RNSumUpWrapper.checkout(request));
+        }
+        return RNSumUpWrapper.checkout(request);
+      });
+    }
     return RNSumUpWrapper.checkout(request);
   },
 
